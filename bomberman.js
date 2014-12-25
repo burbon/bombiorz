@@ -140,31 +140,48 @@ function Bomba(x, y) {
         context.fillRect(this.pozycja.x*f_size, this.pozycja.y*f_size, f_size, f_size);
     };
 
-    this.wybuchnij = function() {
-        context.fillStyle = this.kolorWybuchu;
+    this.sciezkaBomby = function() {
+        var sciezkaWLewo = [];
         for (var xz = this.pozycja.x - 1; xz >= this.pozycja.x - this.zasieg; xz--) {
-             context.fillRect(xz * f_size, this.pozycja.y * f_size, f_size, f_size);
+             sciezkaWLewo.push({ x:xz, y:this.pozycja.y });
         }
+        var sciezkaWPrawo = [];
         for (var xz = this.pozycja.x + 1; xz <= this.pozycja.x + this.zasieg; xz++) {
-             context.fillRect(xz * f_size, this.pozycja.y * f_size, f_size, f_size);
+             sciezkaWPrawo.push({ x:xz, y:this.pozycja.y });
         }
 
+        var sciezkaWGore = [];
         for (var yz = this.pozycja.y - 1; yz >= this.pozycja.y - this.zasieg; yz--) {
-             context.fillRect(this.pozycja.x * f_size, yz * f_size, f_size, f_size);
+             sciezkaWGore.push({ x:this.pozycja.x, y:yz });
         }
+        var sciezkaWDol = [];
         for (var yz = this.pozycja.y + 1; yz <= this.pozycja.y + this.zasieg; yz++) {
-             context.fillRect(this.pozycja.x * f_size, yz * f_size, f_size, f_size);
+             sciezkaWDol.push({ x:this.pozycja.x, y:yz });
         }
 
-       // z_size = f_size * (2 * this.zasieg + 1);
-       // context.fillRect((this.pozycja.x - this.zasieg) * f_size, this.pozycja.y * f_size, z_size, f_size);
-       // context.fillRect(this.pozycja.x * f_size, (this.pozycja.y - this.zasieg) * f_size, f_size, z_size);
+        return {
+            lewo: sciezkaWLewo,
+            prawo: sciezkaWPrawo,
+            gora: sciezkaWGore,
+            dol: sciezkaWDol
+        };
+    }
+
+    this.wybuchnij = function(sciezkaBomby) {
+        context.fillStyle = this.kolorWybuchu;
+
+        for (kierunek in sciezkaBomby) {
+            for (pozycja in sciezkaBomby[kierunek]) {
+                var cp = sciezkaBomby[kierunek][pozycja];
+                context.fillRect(cp.x * f_size, cp.y * f_size, f_size, f_size);
+            }
+        }
 
         this.rysuj();
     };
 }
 
-function KolekcjaBomb() {
+function MenagerBomb() {
     this.bomby = [];
 
     this.dodajBombe = function(bomba) {
@@ -178,7 +195,9 @@ function KolekcjaBomb() {
     this.przerysujBomby = function() {
         for (i in this.bomby) {
             if (this.bomby[i].zaplon <= 0) {
-                this.bomby[i].wybuchnij();
+                var sciezkaBomby = this.bomby[i].sciezkaBomby();
+                sciezkaBomby = this.palWszystko(sciezkaBomby);
+                this.bomby[i].wybuchnij(sciezkaBomby);
                 this.usunBombe();
             }
             else {
@@ -187,6 +206,10 @@ function KolekcjaBomb() {
             }
         }
     };
+
+    this.palWszystko = function(sciezkaBomby) {
+        return sciezkaBomby;
+    }
 }
 
 function Ruch(ludzik) {
@@ -246,17 +269,18 @@ var odswiezanie = 500;
 var grid = (new MyGrid()).init();
 var ludzik = new MyLudzik(12, 12);
 var ruch = new Ruch(ludzik);
-var kolekcjaBomb = new KolekcjaBomb();
+var menagerBomb = new MenagerBomb();
 
 var klasaRysujaca = new Rysuj();
 
 klasaRysujaca.dodajKlase(grid, 'rysujGrid')
     .dodajKlase(ludzik, 'stworz')
-    .dodajKlase(kolekcjaBomb, 'przerysujBomby');
+    .dodajKlase(menagerBomb, 'przerysujBomby');
 
 
 var bomba = new Bomba(11, 11);
-kolekcjaBomb.dodajBombe(bomba);
+menagerBomb.dodajBombe(bomba);
+menagerBomb.dodajBombe((new Bomba(10, 10)));
 
 setInterval(function() {
     //grid['rysujGrid']();
