@@ -193,23 +193,30 @@ function MenagerBomb() {
     };
 
     this.przerysujBomby = function() {
-        for (i in this.bomby) {
+        var bombyDoUsuniecia = 0;
+
+        for (var i in this.bomby) {
+            //console.log([this.bomby[i].zaplon, i]);
             if (this.bomby[i].zaplon <= 0) {
                 var sciezkaBomby = this.bomby[i].sciezkaBomby();
                 sciezkaBomby = this.palWszystko(sciezkaBomby);
                 this.bomby[i].wybuchnij(sciezkaBomby);
-                this.usunBombe();
+                bombyDoUsuniecia++;
             }
             else {
                 this.bomby[i].zaplon -= odswiezanie;
                 this.bomby[i].rysuj();
             }
         }
+        for (var i=0; i<bombyDoUsuniecia; i++) {
+            this.usunBombe();
+        }
+        //console.log('---');
     };
 
     this.palWszystko = function(sciezkaBomby) {
         return sciezkaBomby;
-    }
+    };
 }
 
 function Ruch(ludzik) {
@@ -279,7 +286,7 @@ klasaRysujaca.dodajKlase(grid, 'rysujGrid')
 
 
 var bomba = new Bomba(11, 11);
-menagerBomb.dodajBombe(bomba);
+menagerBomb.dodajBombe((new Bomba(8, 8)));
 menagerBomb.dodajBombe((new Bomba(10, 10)));
 
 setInterval(function() {
