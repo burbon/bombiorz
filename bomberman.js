@@ -242,9 +242,11 @@ function Bomba(x, y, z) {
     this.pozycja = { x: x, y: y };
     this.zasieg = z || 1;
     this.zaplon = 3000;
+    this.czaswybuchu = 1500;
     this.kolor = '#ff8800';
     this.kolorWybuchu = '#0088ff';
-
+    this.sciezkaWybuchu = [];
+    this.wybucha = 0;
     this.rysuj = function() {
         context.fillStyle = this.kolor;
         context.fillRect(this.pozycja.x*f_size, this.pozycja.y*f_size, f_size, f_size);
@@ -277,8 +279,9 @@ function Bomba(x, y, z) {
         };
     }
 
-    this.wybuchnij = function(sciezkaBomby) {
+    this.rysujWybuch = function(){        
         context.fillStyle = this.kolorWybuchu;
+        var sciezkaBomby = this.sciezkaWybuchu;
 
         for (kierunek in sciezkaBomby) {
             for (pozycja in sciezkaBomby[kierunek]) {
@@ -288,6 +291,11 @@ function Bomba(x, y, z) {
         }
 
         this.rysuj();
+    };
+
+    this.wybuchnij = function(sciezkaBomby) {
+        this.sciezkaWybuchu = sciezkaBomby;        
+        this.wybucha = 1;
     };
 }
 
@@ -309,11 +317,16 @@ function MenagerBomb(grid) {
 
         for (var i in this.bomby) {
             //console.log([this.bomby[i].zaplon, i]);
-            if (this.bomby[i].zaplon <= 0) {
+            if (this.bomby[i].zaplon <= 0 && this.bomby[i].wybucha == 0) {
                 var sciezkaBomby = this.bomby[i].sciezkaBomby();
                 sciezkaBomby = this.palWszystko(sciezkaBomby);
                 this.bomby[i].wybuchnij(sciezkaBomby);
+                //bombyDoUsuniecia++;
+            } if(this.bomby[i].czaswybuchu <= 0 ) {
                 bombyDoUsuniecia++;
+            } if(this.bomby[i].wybucha == 1) {
+                this.bomby[i].rysujWybuch();
+                this.bomby[i].czaswybuchu -= odswiezanie;
             }
             else {
                 this.bomby[i].zaplon -= odswiezanie;
