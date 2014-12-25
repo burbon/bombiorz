@@ -20,7 +20,8 @@ function Pole() {
     this.typyPol = {
         'puste': 0,
         'beton': 1,
-        'murek': 2
+        'murek': 2,
+        'bomba': 3
     };
 
     this.typPola = this.typyPol.puste;
@@ -99,8 +100,8 @@ function MyGrid() {
 
 }
 
-function MyLudzik(x,y) {
-    this.pozycja = {x:x, y:y};
+function MyLudzik(x, y) {
+    this.pozycja = { x: x, y: y };
     this.kolor = '#ff0000';
     this.idzWDol = function() {
         return { x: this.pozycja.x, y: this.pozycja.y + 1 };
@@ -125,6 +126,51 @@ function MyLudzik(x,y) {
         //console.log(this.pozycja);
     }
 
+}
+
+function Bomba(x, y) {
+    this.pozycja = { x: x, y: y };
+    this.zasieg = 1;
+    this.zaplon = 3000;
+    this.kolor = '#ff8800';
+    this.kolorWybuchu = '#0088ff';
+
+    this.rysuj = function() {
+        context.fillStyle = this.kolor;
+        context.fillRect(this.pozycja.x*f_size, this.pozycja.y*f_size, f_size, f_size);
+    };
+
+    this.wybuchnij = function() {
+        context.fillStyle = this.kolorWybuchu;
+        z_size = f_size * (2 * this.zasieg + 1);
+        context.fillRect((this.pozycja.x - this.zasieg) * f_size, this.pozycja.y * f_size, z_size, f_size);
+        context.fillRect(this.pozycja.x * f_size, (this.pozycja.y - this.zasieg) * f_size, f_size, z_size);
+    };
+}
+
+function KolekcjaBomb() {
+    this.bomby = [];
+
+    this.dodajBombe = function(bomba) {
+        this.bomby.push(bomba);
+    };
+
+    this.usunBombe = function() {
+        this.bomby.shift()
+    };
+
+    this.przerysujBomby = function() {
+        for (i in this.bomby) {
+            if (this.bomby[i].zaplon <= 0) {
+                this.bomby[i].wybuchnij();
+                this.usunBombe();
+            }
+            else {
+                this.bomby[i].zaplon -= odswiezanie;
+                this.bomby[i].rysuj();
+            }
+        }
+    };
 }
 
 function Ruch(ludzik) {
@@ -179,14 +225,22 @@ function Rysuj() {
     };
 }
 
+var odswiezanie = 500;
+
 var grid = (new MyGrid()).init();
-var ludzik = new MyLudzik(12,12);
+var ludzik = new MyLudzik(12, 12);
 var ruch = new Ruch(ludzik);
+var kolekcjaBomb = new KolekcjaBomb();
 
 var klasaRysujaca = new Rysuj();
 
 klasaRysujaca.dodajKlase(grid, 'rysujGrid')
-    .dodajKlase(ludzik, 'stworz');
+    .dodajKlase(ludzik, 'stworz')
+    .dodajKlase(kolekcjaBomb, 'przerysujBomby');
+
+
+var bomba = new Bomba(11, 11);
+kolekcjaBomb.dodajBombe(bomba);
 
 setInterval(function() {
     //grid['rysujGrid']();
@@ -196,5 +250,5 @@ setInterval(function() {
     ruch.sprawdzCzyLudzikMoze(ruchLudzika, pole);
     klasaRysujaca.przerysuj();
 
-}, 500);
+}, odswiezanie);
 
