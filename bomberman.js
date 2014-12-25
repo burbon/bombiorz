@@ -142,16 +142,25 @@ function Bomba(x, y) {
 
     this.wybuchnij = function() {
         context.fillStyle = this.kolorWybuchu;
-        for (var xz = this.pozycja.x - this.zasieg; xz <= this.pozycja.x+this.zasieg; xz++) {
+        for (var xz = this.pozycja.x - 1; xz >= this.pozycja.x - this.zasieg; xz--) {
+             context.fillRect(xz * f_size, this.pozycja.y * f_size, f_size, f_size);
+        }
+        for (var xz = this.pozycja.x + 1; xz <= this.pozycja.x + this.zasieg; xz++) {
              context.fillRect(xz * f_size, this.pozycja.y * f_size, f_size, f_size);
         }
 
-        for (var yz = this.pozycja.y - this.zasieg; yz <= this.pozycja.y+this.zasieg; yz++) {
+        for (var yz = this.pozycja.y - 1; yz >= this.pozycja.y - this.zasieg; yz--) {
              context.fillRect(this.pozycja.x * f_size, yz * f_size, f_size, f_size);
         }
+        for (var yz = this.pozycja.y + 1; yz <= this.pozycja.y + this.zasieg; yz++) {
+             context.fillRect(this.pozycja.x * f_size, yz * f_size, f_size, f_size);
+        }
+
        // z_size = f_size * (2 * this.zasieg + 1);
        // context.fillRect((this.pozycja.x - this.zasieg) * f_size, this.pozycja.y * f_size, z_size, f_size);
        // context.fillRect(this.pozycja.x * f_size, (this.pozycja.y - this.zasieg) * f_size, f_size, z_size);
+
+        this.rysuj();
     };
 }
 
