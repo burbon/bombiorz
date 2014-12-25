@@ -15,30 +15,53 @@ var height = f_size * 25;
 canvas.width = width;
 canvas.height = height;
 
-function MyGrid() {
-    
-    this.pola = [];
 
-    this.kolorKwadratu = '#fafafa';
-
-    this.rysujGrid = function() {
-        context.fillStyle = '#00ff00';
-        context.fillRect(0,0,width,height);
-
-        for(var i=0; i<width/f_size; i++) {
-            this.pola[i] = [];
-            for(var j=0; j<height/f_size; j++) {
-                this.pola[i][j] = 0;
-                this.rysujPole(i, j);
-            }
-        }
+function Pole() {
+    this.typyPol = {
+        'puste': 0,
+        'beton': 1
     };
 
-    this.rysujPole = function(i, j) {
-        if((+i+1) % 2 == 0 && (+j+1) % 2 == 0) {
-            this.pola[i][j] = 1;
-            context.fillStyle = this.kolorKwadratu;
-            context.fillRect(i*f_size,j*f_size,f_size,f_size);
+    this.typPola = this.typyPol.puste;
+
+    this.ustawBeton = function() {
+        this.typPola = this.typyPol.beton;
+    };
+
+    this.jestBeton = function() {
+        return this.typPola == this.typyPol.beton ? 1 : 0;
+    };
+
+    this.jestPuste = function() {
+        return this.typPola == this.typyPol.puste ? 1 : 0;
+    };
+}
+
+function MyGrid() {
+    this.pola = [];
+
+    this.kolorBetonu= '#fafafa';
+
+    this.init = function() {
+        for (var i=0; i<width/f_size; i++) {
+            this.pola[i] = [];
+            for (var j=0; j<height/f_size; j++) {
+                this.pola[i][j] = new Pole();
+                this.ustawBeton(i,j);
+            }
+        }
+
+        return this;
+    }
+
+    this.rysujGrid = function() {
+        for (x in this.pola) {
+            for (y in this.pola[x]) {
+                if (this.pola[x][y].jestBeton()) {
+                    context.fillStyle = this.kolorBetonu;
+                    context.fillRect(x*f_size, y*f_size, f_size, f_size);
+                }
+            }
         }
     };
 
@@ -46,6 +69,13 @@ function MyGrid() {
         //console.log(pozycja);
         return this.pola[pozycja.x][pozycja.y];
     }
+
+    this.ustawBeton = function(i, j) {
+        if((+i+1) % 2 == 0 && (+j+1) % 2 == 0) {
+            this.pola[i][j].ustawBeton();
+        }
+    };
+
 }
 
 function MyLudzik(x,y) {
@@ -97,8 +127,8 @@ function Ruch(ludzik) {
         return nowaPozycja;
     }
 
-    this.sprawdzCzyLudzikMoze = function(nowaPozycja, stanPola) {
-        if (stanPola == 0) {
+    this.sprawdzCzyLudzikMoze = function(nowaPozycja, pole) {
+        if (pole.jestPuste()) {
             ludzik.pozycja = nowaPozycja;
         }
     }
@@ -123,19 +153,22 @@ function Rysuj() {
      * @param srring metoda  
     */ 
     this.dodajKlase = function(klasa, metoda) {
-	this.kolekcjaKlas.push({klasa: klasa, metoda: metoda});
-	return this;    
+        this.kolekcjaKlas.push({klasa: klasa, metoda: metoda});
+        return this;
     };
     
     this.przerysuj = function() {
-	for (i in this.kolekcjaKlas) {
-	    var klasa = this.kolekcjaKlas[i].klasa;
-	    klasa[this.kolekcjaKlas[i].metoda]();
-	}
+        context.fillStyle = '#00ff00';
+        context.fillRect(0,0,width,height);
+
+        for (i in this.kolekcjaKlas) {
+            var klasa = this.kolekcjaKlas[i].klasa;
+            klasa[this.kolekcjaKlas[i].metoda]();
+        }
     };
 }
 
-var grid = new MyGrid();
+var grid = (new MyGrid()).init();
 var ludzik = new MyLudzik(12,12);
 var ruch = new Ruch(ludzik);
 
@@ -144,15 +177,12 @@ var klasaRysujaca = new Rysuj();
 klasaRysujaca.dodajKlase(grid, 'rysujGrid')
     .dodajKlase(ludzik, 'stworz');
 
-grid.rysujGrid();
-
-    
 setInterval(function() {
     //grid['rysujGrid']();
     var ruchLudzika = ruch.ruchLudzika();
-    var stanPola = grid.wezPole(ruchLudzika);
+    var pole = grid.wezPole(ruchLudzika);
 
-    ruch.sprawdzCzyLudzikMoze(ruchLudzika, stanPola);
+    ruch.sprawdzCzyLudzikMoze(ruchLudzika, pole);
     klasaRysujaca.przerysuj();
     
 }, 500);
