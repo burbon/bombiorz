@@ -108,6 +108,8 @@ function MyGrid() {
 function Ludzik(x, y, kolor) {
     this.pozycja = { x: x, y: y };
     this.kolor = kolor || '#ff0000';
+    this.stawiamBombe;
+
     this.idzWDol = function() {
         return { x: this.pozycja.x, y: this.pozycja.y + 1 };
     }
@@ -131,9 +133,13 @@ function Ludzik(x, y, kolor) {
         //console.log(this.pozycja);
     }
 
+    this.podlozBombe = function() {
+        var bomba = new Bomba(this.pozycja.x, this.pozycja.y);
+        this.stawiamBombe = bomba;
+    }
 }
 
-function MenagerLudzikow(grid){
+function MenagerLudzikow(grid, menagerBomb){
     this.kolekcjaLudzikow = [];
 
     this.dodajLudzika = function(ludzik) {
@@ -145,8 +151,10 @@ function MenagerLudzikow(grid){
     this.przerysuj = function() {
         for (index in this.kolekcjaLudzikow) {
             var ludzik = this.kolekcjaLudzikow[index];
-            var ruch = new Ruch(ludzik);
 
+            this.czyLudzikStawiaBombe(ludzik);
+
+            var ruch = new Ruch(ludzik);
             var ruchLudzika = ruch.ruchLudzika();
 
             var pole = grid.wezPole(ruchLudzika);
@@ -165,6 +173,13 @@ function MenagerLudzikow(grid){
             }
         }
         return true;
+    }
+
+    this.czyLudzikStawiaBombe = function(ludzik) {
+        if (ludzik.stawiamBombe) {
+            menagerBomb.dodajBombe(ludzik.stawiamBombe);
+            ludzik.stawiamBombe = false;
+        }
     }
 
 }
@@ -287,6 +302,7 @@ function MenagerBomb(grid) {
 
 function Ruch(ludzik) {
     this.ruchLudzika = function() {
+        var podlozBombe = Math.floor(Math.random() * 8);
         var gdzie = Math.floor(4 * Math.random());
         var nowaPozycja;
 
@@ -301,6 +317,10 @@ function Ruch(ludzik) {
         }
         else if (gdzie == 3) {
             nowaPozycja = ludzik.idzWLewo();
+        }
+
+        if (podlozBombe == 1) {
+            ludzik.podlozBombe();
         }
 
         return nowaPozycja;
@@ -341,7 +361,7 @@ var odswiezanie = 500;
 
 var grid = (new MyGrid()).init();
 var menagerBomb = new MenagerBomb(grid);
-var menagerLudzikow = new MenagerLudzikow(grid);
+var menagerLudzikow = new MenagerLudzikow(grid, menagerBomb);
 var klasaRysujaca = new Rysuj();
 
 klasaRysujaca.dodajKlase(grid, 'rysujGrid')
