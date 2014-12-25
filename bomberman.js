@@ -19,7 +19,8 @@ canvas.height = height;
 function Pole() {
     this.typyPol = {
         'puste': 0,
-        'beton': 1
+        'beton': 1,
+        'murek': 2
     };
 
     this.typPola = this.typyPol.puste;
@@ -32,6 +33,14 @@ function Pole() {
         return this.typPola == this.typyPol.beton ? 1 : 0;
     };
 
+    this.ustawMurek = function() {
+        this.typPola = this.typyPol.murek;
+    };
+
+    this.jestMurek = function() {
+        return this.typPola == this.typyPol.murek ? 1 : 0;
+    };
+
     this.jestPuste = function() {
         return this.typPola == this.typyPol.puste ? 1 : 0;
     };
@@ -42,12 +51,14 @@ function MyGrid() {
 
     this.kolorBetonu= '#fafafa';
 
+    this.kolorMurku = '#dadada';
+
     this.init = function() {
         for (var i=0; i<width/f_size; i++) {
             this.pola[i] = [];
             for (var j=0; j<height/f_size; j++) {
                 this.pola[i][j] = new Pole();
-                this.ustawBeton(i,j);
+                this.ustawPole(i,j);
             }
         }
 
@@ -61,6 +72,10 @@ function MyGrid() {
                     context.fillStyle = this.kolorBetonu;
                     context.fillRect(x*f_size, y*f_size, f_size, f_size);
                 }
+                else if (this.pola[x][y].jestMurek()) {
+                    context.fillStyle = this.kolorMurku;
+                    context.fillRect(x*f_size, y*f_size, f_size, f_size);
+                }
             }
         }
     };
@@ -70,9 +85,15 @@ function MyGrid() {
         return this.pola[pozycja.x][pozycja.y];
     }
 
-    this.ustawBeton = function(i, j) {
+    this.ustawPole = function(i, j) {
         if((+i+1) % 2 == 0 && (+j+1) % 2 == 0) {
             this.pola[i][j].ustawBeton();
+        }
+        else {
+            var rand = Math.floor(Math.random() * 5);
+            if (rand == 1) {
+                this.pola[i][j].ustawMurek();
+            }
         }
     };
 
@@ -134,16 +155,6 @@ function Ruch(ludzik) {
     }
 }
 
-function Murek(grid) {
-    this.iloscMurkow = 20;
-    
-    this.kolorMurku = '#dadada';
-    
-    this.zrobMurek = function() {
-      
-    }
-    
-}
 
 function Rysuj() {
     this.kolekcjaKlas = [];
@@ -156,7 +167,7 @@ function Rysuj() {
         this.kolekcjaKlas.push({klasa: klasa, metoda: metoda});
         return this;
     };
-    
+
     this.przerysuj = function() {
         context.fillStyle = '#00ff00';
         context.fillRect(0,0,width,height);
@@ -184,6 +195,6 @@ setInterval(function() {
 
     ruch.sprawdzCzyLudzikMoze(ruchLudzika, pole);
     klasaRysujaca.przerysuj();
-    
+
 }, 500);
 
