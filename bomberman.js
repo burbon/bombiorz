@@ -104,7 +104,7 @@ function MyGrid() {
 
 }
 
-function MyLudzik(x, y) {
+function Ludzik(x, y) {
     this.pozycja = { x: x, y: y };
     this.kolor = '#ff0000';
     this.idzWDol = function() {
@@ -123,7 +123,7 @@ function MyLudzik(x, y) {
         return { x: this.pozycja.x - 1, y: this.pozycja.y };
     }
 
-    this.stworz = function() {
+    this.rysuj = function() {
         context.fillStyle = this.kolor;
         //context.fillCircle(x*f_size+f_size/2,y*f_size+f_size/2,f_size/2);
         context.fillRect(this.pozycja.x*f_size, this.pozycja.y*f_size, f_size, f_size);
@@ -131,6 +131,31 @@ function MyLudzik(x, y) {
     }
 
 }
+
+function MenagerLudzikow(grid){
+    this.kolekcjaLudzikow = [];
+
+    this.dodajLudzika = function(ludzik){
+        this.kolekcjaLudzikow.push(ludzik);
+       // ludzik.ustawIndex(this.kolekcjaLudzikow.lenght-1);
+
+    };
+
+    this.przerysuj = function(){
+        for (index in this.kolekcjaLudzikow) {
+            var ludzik = this.kolekcjaLudzikow[index];
+            var ruch = new Ruch(ludzik);
+
+            var ruchLudzika = ruch.ruchLudzika();
+
+            var pole = grid.wezPole(ruchLudzika);
+            ruch.sprawdzCzyLudzikMoze(ruchLudzika, pole);
+            ludzik.rysuj();
+        }
+    };
+
+}
+
 
 function Bomba(x, y, z) {
     this.pozycja = { x: x, y: y };
@@ -185,7 +210,7 @@ function Bomba(x, y, z) {
     };
 }
 
-function MenagerBomb() {
+function MenagerBomb(grid) {
     this.bomby = [];
 
     this.dodajBombe = function(bomba) {
@@ -302,14 +327,12 @@ function Rysuj() {
 var odswiezanie = 500;
 
 var grid = (new MyGrid()).init();
-var ludzik = new MyLudzik(12, 12);
-var ruch = new Ruch(ludzik);
-var menagerBomb = new MenagerBomb();
-
+var menagerBomb = new MenagerBomb(grid);
+var menagerLudzikow = new MenagerLudzikow(grid);
 var klasaRysujaca = new Rysuj();
 
 klasaRysujaca.dodajKlase(grid, 'rysujGrid')
-    .dodajKlase(ludzik, 'stworz')
+    .dodajKlase(menagerLudzikow, 'przerysuj')
     .dodajKlase(menagerBomb, 'przerysujBomby');
 
 
@@ -317,12 +340,16 @@ var bomba = new Bomba(11, 11);
 menagerBomb.dodajBombe((new Bomba(8, 8)));
 menagerBomb.dodajBombe((new Bomba(10, 10, 2)));
 
+
+var ludzik = new Ludzik(12, 12);
+
+menagerLudzikow.dodajLudzika(ludzik);
+
+menagerLudzikow.dodajLudzika((new Ludzik(8, 8)));
+
 setInterval(function() {
     //grid['rysujGrid']();
-    var ruchLudzika = ruch.ruchLudzika();
-    var pole = grid.wezPole(ruchLudzika);
 
-    ruch.sprawdzCzyLudzikMoze(ruchLudzika, pole);
     klasaRysujaca.przerysuj();
 
 }, odswiezanie);
