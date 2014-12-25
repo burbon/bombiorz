@@ -42,6 +42,10 @@ function Pole() {
         return this.typPola == this.typyPol.murek ? 1 : 0;
     };
 
+    this.ustawPuste = function() {
+        this.typPola = this.typyPol.puste;
+    };
+
     this.jestPuste = function() {
         return this.typPola == this.typyPol.puste ? 1 : 0;
     };
@@ -128,9 +132,9 @@ function MyLudzik(x, y) {
 
 }
 
-function Bomba(x, y) {
+function Bomba(x, y, z) {
     this.pozycja = { x: x, y: y };
-    this.zasieg = 1;
+    this.zasieg = z || 1;
     this.zaplon = 3000;
     this.kolor = '#ff8800';
     this.kolorWybuchu = '#0088ff';
@@ -215,7 +219,31 @@ function MenagerBomb() {
     };
 
     this.palWszystko = function(sciezkaBomby) {
-        return sciezkaBomby;
+        var wypalonaSciezka = {
+            prawo: [],
+            lewo: [],
+            gora: [],
+            dol: []
+        };
+
+        for (kierunek in sciezkaBomby) {
+            for (pozycja in sciezkaBomby[kierunek]) {
+                var cp = sciezkaBomby[kierunek][pozycja];
+                var pole = grid.wezPole(cp);
+                if (pole.jestPuste()) {
+                    wypalonaSciezka[kierunek].push(cp);
+                }
+                else if (pole.jestBeton()) {
+                    break;
+                }
+                else if (pole.jestMurek()) {
+                    wypalonaSciezka[kierunek].push(cp);
+                    pole.ustawPuste();
+                    break;
+                }
+            }
+        }
+        return wypalonaSciezka;
     };
 }
 
@@ -287,7 +315,7 @@ klasaRysujaca.dodajKlase(grid, 'rysujGrid')
 
 var bomba = new Bomba(11, 11);
 menagerBomb.dodajBombe((new Bomba(8, 8)));
-menagerBomb.dodajBombe((new Bomba(10, 10)));
+menagerBomb.dodajBombe((new Bomba(10, 10, 2)));
 
 setInterval(function() {
     //grid['rysujGrid']();
