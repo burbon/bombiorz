@@ -16,7 +16,8 @@ canvas.width = width;
 canvas.height = height;
 
 
-function Pole() {
+function Pole(x, y) {
+    this.pozycja = { x: x, y: y };
     this.typyPol = {
         'puste': 0,
         'beton': 1,
@@ -62,7 +63,7 @@ function MyGrid() {
         for (var i=0; i<width/f_size; i++) {
             this.pola[i] = [];
             for (var j=0; j<height/f_size; j++) {
-                this.pola[i][j] = new Pole();
+                this.pola[i][j] = new Pole(i,j);
                 this.ustawPole(i,j);
             }
         }
@@ -104,9 +105,9 @@ function MyGrid() {
 
 }
 
-function Ludzik(x, y) {
+function Ludzik(x, y, kolor) {
     this.pozycja = { x: x, y: y };
-    this.kolor = '#ff0000';
+    this.kolor = kolor || '#ff0000';
     this.idzWDol = function() {
         return { x: this.pozycja.x, y: this.pozycja.y + 1 };
     }
@@ -135,13 +136,13 @@ function Ludzik(x, y) {
 function MenagerLudzikow(grid){
     this.kolekcjaLudzikow = [];
 
-    this.dodajLudzika = function(ludzik){
+    this.dodajLudzika = function(ludzik) {
         this.kolekcjaLudzikow.push(ludzik);
        // ludzik.ustawIndex(this.kolekcjaLudzikow.lenght-1);
 
     };
 
-    this.przerysuj = function(){
+    this.przerysuj = function() {
         for (index in this.kolekcjaLudzikow) {
             var ludzik = this.kolekcjaLudzikow[index];
             var ruch = new Ruch(ludzik);
@@ -149,10 +150,22 @@ function MenagerLudzikow(grid){
             var ruchLudzika = ruch.ruchLudzika();
 
             var pole = grid.wezPole(ruchLudzika);
-            ruch.sprawdzCzyLudzikMoze(ruchLudzika, pole);
+            ruch.sprawdzCzyLudzikMoze(ruchLudzika, pole, this);
             ludzik.rysuj();
         }
     };
+
+    this.ludzikMozeWejscNaPole = function(pole) {
+        for (index in this.kolekcjaLudzikow) {
+            var ludzik = this.kolekcjaLudzikow[index];
+            if (ludzik.pozycja.x == pole.pozycja.x &&
+                ludzik.pozycja.y == pole.pozycja.y
+            ) {
+                return false;
+            }
+        }
+        return true;
+    }
 
 }
 
@@ -293,8 +306,8 @@ function Ruch(ludzik) {
         return nowaPozycja;
     }
 
-    this.sprawdzCzyLudzikMoze = function(nowaPozycja, pole) {
-        if (pole.jestPuste()) {
+    this.sprawdzCzyLudzikMoze = function(nowaPozycja, pole, menagerLudzikow) {
+        if (pole.jestPuste() && menagerLudzikow.ludzikMozeWejscNaPole(pole)) {
             ludzik.pozycja = nowaPozycja;
         }
     }
@@ -336,21 +349,29 @@ klasaRysujaca.dodajKlase(grid, 'rysujGrid')
     .dodajKlase(menagerBomb, 'przerysujBomby');
 
 
-var bomba = new Bomba(11, 11);
-menagerBomb.dodajBombe((new Bomba(8, 8)));
-menagerBomb.dodajBombe((new Bomba(10, 10, 2)));
+var bomby = [
+    (new Bomba(11, 11)),
+    (new Bomba(8, 8)),
+    (new Bomba(10, 10, 2))
+];
 
+for (var bomba in bomby) {
+    menagerBomb.dodajBombe(bomby[bomba]);
+}
 
-var ludzik = new Ludzik(12, 12);
+var ludziki = [
+    (new Ludzik(12, 12)),
+    (new Ludzik(11, 11, '#ffff00')),
+    (new Ludzik(10, 10, '#ff00ff')),
+    (new Ludzik(9, 9, '#ffffff')),
+    (new Ludzik(8, 8, '#000000'))
+];
 
-menagerLudzikow.dodajLudzika(ludzik);
-
-menagerLudzikow.dodajLudzika((new Ludzik(8, 8)));
+for (var ludzik in ludziki) {
+    menagerLudzikow.dodajLudzika(ludziki[ludzik]);
+}
 
 setInterval(function() {
-    //grid['rysujGrid']();
-
     klasaRysujaca.przerysuj();
-
 }, odswiezanie);
 
