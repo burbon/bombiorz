@@ -26,7 +26,7 @@ function Pole(x, y) {
         'ludzik': 4
     };
 
-    this.ludzik;
+    this.zawartosc;
 
     this.typPola = this.typyPol.puste;
 
@@ -48,7 +48,7 @@ function Pole(x, y) {
 
     this.ustawPuste = function() {
         this.typPola = this.typyPol.puste;
-        this.ludzik = false;
+        this.zawartosc = false;
     };
 
     this.jestPuste = function() {
@@ -57,15 +57,16 @@ function Pole(x, y) {
 
     this.ustawLudzika = function(ludzik) {
         this.typPola = this.typyPol.ludzik;
-        this.ludzik = ludzik;
+        this.zawartosc = ludzik;
     };
 
     this.jestLudzik = function() {
         return this.typPola == this.typyPol.ludzik ? 1 : 0;
     };
 
-    this.ustawBombe = function() {
+    this.ustawBombe = function(bomba) {
         this.typPola = this.typyPol.bomba;
+        this.zawartosc = bomba;
     };
 
     this.jestBomba = function() {
@@ -295,11 +296,12 @@ function MenagerBomb(grid) {
 
     this.dodajBombe = function(bomba) {
         this.bomby.push(bomba);
-        grid.wezPole(bomba.pozycja).ustawBombe();
+        grid.wezPole(bomba.pozycja).ustawBombe(bomba);
     };
 
     this.usunBombe = function() {
-        this.bomby.shift()
+        var bomba = this.bomby.shift()
+        grid.wezPole(bomba.pozycja).ustawPuste();
     };
 
     this.przerysujBomby = function() {
@@ -347,11 +349,16 @@ function MenagerBomb(grid) {
                     pole.ustawPuste();
                     break;
                 }
-                else if(pole.jestLudzik()) {
-                   wypalonaSciezka[kierunek].push(cp);
-                    console.log([pole, pole.ludzik]);
-                    pole.ludzik.umrzyj();
+                else if (pole.jestLudzik()) {
+                    wypalonaSciezka[kierunek].push(cp);
+                    pole.zawartosc.umrzyj();
                     pole.ustawPuste();
+                }
+                else if (pole.jestBomba()) {
+                    //wypalonaSciezka[kierunek].push(cp);
+                    pole.zawartosc.zaplon = 0;
+                    pole.ustawPuste();
+                    break;
                 }
             }
         }
@@ -426,10 +433,27 @@ klasaRysujaca.dodajKlase(grid, 'rysujGrid')
     .dodajKlase(menagerBomb, 'przerysujBomby')
     .dodajKlase(menagerLudzikow, 'przerysuj');
 
+
+var i = 2;
+var j = 1;
+var z = 2;
+var b1 = (new Bomba(10, 10 + i*j++, z));
+b1.zaplon = 3000;
+var b2 = (new Bomba(10, 10 + i*j++, z));
+b2.zaplon = 5000;
+var b3 = (new Bomba(10, 10 + i*j++, z));
+b3.zaplon = 7000;
+var b4 = (new Bomba(10, 10 + i*j++, z));
+b4.zaplon = 7000;
+var b5 = (new Bomba(10, 10 + i*j++, z));
+b5.zaplon = 7000;
+
 var bomby = [
-   // (new Bomba(11, 11)),
-   // (new Bomba(8, 8)),
-    //(new Bomba(10, 10, 2))
+    b1,
+    b2,
+    b3,
+    b4,
+    b5
 ];
 
 for (var bomba in bomby) {
@@ -437,11 +461,11 @@ for (var bomba in bomby) {
 }
 
 var ludziki = [
-    (new Ludzik(12, 12)),
-    (new Ludzik(6, 6, '#ffff00')),
-    (new Ludzik(10, 10, '#ff00ff')),
-    (new Ludzik(6, 8, '#0f0f0f')),
-    (new Ludzik(8, 8, '#000000'))
+    //(new Ludzik(12, 12)),
+    //(new Ludzik(6, 6, '#ffff00')),
+    //(new Ludzik(10, 10, '#ff00ff')),
+    //(new Ludzik(6, 8, '#0f0f0f')),
+    //(new Ludzik(8, 8, '#000000'))
 ];
 
 for (var ludzik in ludziki) {
